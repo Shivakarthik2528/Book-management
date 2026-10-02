@@ -1,0 +1,142 @@
+
+
+import pandas as pd
+from sklearn.preprocessing import LabelEncoder
+     
+
+df = pd.read_csv("/content/student_performance_dataset.csv")
+print("First 5 rows of dataset: ")
+print(df.head())
+     
+First 5 rows of dataset: 
+  Student_ID  Gender  Study_Hours_per_Week  Attendance_Rate  Past_Exam_Scores  \
+0       S147    Male                    31        68.267841                86   
+1       S136    Male                    16        78.222927                73   
+2       S209  Female                    21        87.525096                74   
+3       S458  Female                    27        92.076483                99   
+4       S078  Female                    37        98.655517                63   
+
+  Parental_Education_Level Internet_Access_at_Home Extracurricular_Activities  \
+0              High School                     Yes                        Yes   
+1                      PhD                      No                         No   
+2                      PhD                     Yes                         No   
+3                Bachelors                      No                         No   
+4                  Masters                      No                        Yes   
+
+   Final_Exam_Score Pass_Fail  
+0                63      Pass  
+1                50      Fail  
+2                55      Fail  
+3                65      Pass  
+4                70      Pass  
+
+print("\nDataset Info:")
+print(df.info())
+     
+Dataset Info:
+<class 'pandas.core.frame.DataFrame'>
+RangeIndex: 708 entries, 0 to 707
+Data columns (total 10 columns):
+ #   Column                      Non-Null Count  Dtype  
+---  ------                      --------------  -----  
+ 0   Student_ID                  708 non-null    object 
+ 1   Gender                      708 non-null    object 
+ 2   Study_Hours_per_Week        708 non-null    int64  
+ 3   Attendance_Rate             708 non-null    float64
+ 4   Past_Exam_Scores            708 non-null    int64  
+ 5   Parental_Education_Level    708 non-null    object 
+ 6   Internet_Access_at_Home     708 non-null    object 
+ 7   Extracurricular_Activities  708 non-null    object 
+ 8   Final_Exam_Score            708 non-null    int64  
+ 9   Pass_Fail                   708 non-null    object 
+dtypes: float64(1), int64(3), object(6)
+memory usage: 55.4+ KB
+None
+
+print("\nMissing values before handling:")
+print(df.isnull().sum())
+     
+Missing values before handling:
+Student_ID                    0
+Gender                        0
+Study_Hours_per_Week          0
+Attendance_Rate               0
+Past_Exam_Scores              0
+Parental_Education_Level      0
+Internet_Access_at_Home       0
+Extracurricular_Activities    0
+Final_Exam_Score              0
+Pass_Fail                     0
+dtype: int64
+
+df.loc[0:5, 'Study_Hours_per_Week']=None
+df.loc[10:15, 'Attendence_Rate']=None
+df.loc[20:25, 'Past_Exam_Scores']=None
+df.loc[30:35, 'Final_Exam_Score']=None
+
+print("\nMissing Values after inserting sample NaNs:")
+print(df.isnull().sum()[df.isnull().sum()>0])
+     
+Missing Values after inserting sample NaNs:
+Study_Hours_per_Week      6
+Past_Exam_Scores          6
+Final_Exam_Score          6
+Attendence_Rate         708
+dtype: int64
+
+df['Study_Hours_per_Week'] = df['Study_Hours_per_Week'].fillna(df['Study_Hours_per_Week'].mean())
+     
+
+df['Attendance_Rate'] = df['Attendance_Rate'].fillna(df['Attendance_Rate'].median())
+     
+
+df['Past_Exam_Scores'] = df['Past_Exam_Scores'].ffill()
+     
+
+df['Final_Exam_Score'] = df['Final_Exam_Score'].fillna(df['Final_Exam_Score'].mean())
+print("\nMissing Values after imputation:")
+print(df.isnull().sum())
+     
+Missing Values after imputation:
+Student_ID                      0
+Gender                          0
+Study_Hours_per_Week            0
+Attendance_Rate                 0
+Past_Exam_Scores                0
+Parental_Education_Level        0
+Internet_Access_at_Home         0
+Extracurricular_Activities      0
+Final_Exam_Score                0
+Pass_Fail                       0
+Attendence_Rate               708
+dtype: int64
+
+df = pd.get_dummies(df, columns=['Parental_Education_Level'])
+print("\nOne-Hot Encoded columns:")
+print(df.columns.tolist())
+     
+One-Hot Encoded columns:
+['Student_ID', 'Gender', 'Study_Hours_per_Week', 'Attendance_Rate', 'Past_Exam_Scores', 'Internet_Access_at_Home', 'Extracurricular_Activities', 'Final_Exam_Score', 'Pass_Fail', 'Attendence_Rate', 'Parental_Education_Level_Bachelors', 'Parental_Education_Level_High School', 'Parental_Education_Level_Masters', 'Parental_Education_Level_PhD']
+
+le = LabelEncoder()
+df["Pass_Fail_Encoded"] = le.fit_transform(df["Pass_Fail"])
+print("\nLabel Encoded Result:")
+print(df[['Pass_Fail', 'Pass_Fail_Encoded']].head())
+     
+Label Encoded Result:
+  Pass_Fail  Pass_Fail_Encoded
+0      Pass                  1
+1      Fail                  0
+2      Fail                  0
+3      Pass                  1
+4      Pass                  1
+
+df['Gender_Encoded'] = le.fit_transform(df['Gender'])
+df['Internet_Access_Encoded'] = le.fit_transform(df['Internet_Access_at_Home'])
+df['Extracurricular_Encoded'] = le.fit_transform(df['Extracurricular_Activities'])
+     
+
+df.to_csv("student_performance_cleaned.csv",index=False)
+print("\nCleaned dataset saved as 'student_performance_cleaned.csv'")
+     
+Cleaned dataset saved as 'student_performance_cleaned.csv'
